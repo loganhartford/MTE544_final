@@ -44,7 +44,7 @@ class planner:
         startPose=self.m_utilities.position_2_cell(startPoseCart)
         endPose=self.m_utilities.position_2_cell(endPoseCart)
 
-        # [Part 3] TODO Use the PRM and search_PRM to generate the path
+        # [Part 3] DONE Use the PRM and search_PRM to generate the path
         # Hint: see the example of the ASTAR case below, there is no scaling factor for PRM
         if type == PRM_PLANNER:
 

@@ -194,7 +194,7 @@ def search(maze, start, end, scale_factor):
             yet_to_visit_dict[child.position] = child
 
 
-# [Part 3] TODO Complete the this function so that it is adapted to search a graph provided as PRM instead of a grid maze
+# [Part 3] DONE Complete the this function so that it is adapted to search a graph provided as PRM instead of a grid maze
 # Hint: look at the original A* search above and adapt to the PRM
 def search_PRM(points, prm, start, end):
     """
@@ -278,13 +278,17 @@ def search_PRM(points, prm, start, end):
 
             # Create a new node for the neighbor
             child = Node(current_node, neighbor_idx)
+            print("neighbor_idx", neighbor_idx)
             
             # Create the f, g, and h values
-            child.g = current_node.g + sqrt(((child.position[0] - current_node.position[0]) ** 2) + 
-                                           ((child.position[1] - current_node.position[1]) ** 2))
+            current_coord = points[current_node.position]
+            child_coord = points[child.position]
+            end_coord = points[end_node.position]
+            child.g = current_node.g + sqrt(((child_coord[0] - current_coord[0]) ** 2) + 
+                                           ((child_coord[1] - current_coord[1]) ** 2))
             ## Heuristic costs calculated here, this is using eucledian distance
-            child.h = sqrt(((child.position[0] - end_node.position[0]) ** 2) + 
-                       ((child.position[1] - end_node.position[1]) ** 2)) 
+            child.h = sqrt(((child_coord[0] - end_coord[0]) ** 2) + 
+                       ((child_coord[1] - end_coord[1]) ** 2)) 
 
             child.f = child.g + child.h
 

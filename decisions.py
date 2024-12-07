@@ -38,8 +38,8 @@ class decision_maker(Node):
         self.reachThreshold=0.1
 
 
-        # [Part 4] TODO Use the EKF localization instead of rawSensors
-        self.localizer=localization(rawSensors)
+        # [Part 4] DONE Use the EKF localization instead of rawSensors
+        self.localizer=localization(kalmanFilter)
 
 
         self.goal = None

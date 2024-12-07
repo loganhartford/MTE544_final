@@ -61,11 +61,12 @@ def prm_graph(start, goal, obstacles_list, robot_radius, *, rng=None, m_utilitie
     max_edge_len = MAX_EDGE_LEN
     # Generate the sample points
     if use_map:
-        # [Part 2] TODO The radius of the robot and the maximum edge lengths are given in [m], but the map is given in cell positions.
+        # [Part 2] DONE The radius of the robot and the maximum edge lengths are given in [m], but the map is given in cell positions.
         # Therefore, when using the map, the radius and edge length need to be adjusted for the resolution of the cell positions
         # Hint: in the map utilities there is the resolution stored
-        robot_radius = ...
-        max_edge_len = ...
+        resolution = m_utilities.getResolution()  # Get the resolution of the map (meters per cell)
+        robot_radius = robot_radius / resolution  # Convert robot radius to cell units
+        max_edge_len = max_edge_len / resolution  # Convert max edge length to cell units
 
     # Get sample data
     sample_points = generate_sample_points(start, goal,

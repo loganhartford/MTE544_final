@@ -52,8 +52,8 @@ class decision_maker(Node):
             self.planner=planner(POINT_PLANNER)
             return -1
 
-        # [Part 4] TODO PID gains if needed
-        self.controller=trajectoryController(klp=0.2, klv=0.2, kap=0.2, kav=0.2)      
+        # [Part 4] DONE PID gains if needed
+        self.controller=trajectoryController(klp=0.1, klv=0.2, kap=0.3, kav=0.2)      
         
         if motion_type in [TRAJECTORY_PLANNER, ASTAR_PLANNER, PRM_PLANNER]:
             self.planner = planner(motion_type)
@@ -160,6 +160,7 @@ def main(args=None):
 
     # Set the desired planner here
     DM=decision_maker(Twist, "/cmd_vel", 10, motion_type=PRM_PLANNER)
+    # DM=decision_maker(Twist, "/cmd_vel", 10, motion_type=ASTAR_PLANNER)
 
     try:
         spin(DM)

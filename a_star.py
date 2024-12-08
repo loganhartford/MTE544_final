@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from math import sqrt
+import heapq
 
 
 class Node:
@@ -217,29 +218,24 @@ def search_PRM(points, prm, start, end):
     path_points = []
 
     # Initialize open and closed sets
-    yet_to_visit_dict = {start_node.position: start_node}
+    yet_to_visit_pq = []
+    heapq.heappush(yet_to_visit_pq, (start_node.f, start_node))
+
     visited_dict = {}
 
     max_iterations = (len(points) // 2) ** 10
     outer_iterations = 0
 
-    while len(yet_to_visit_dict) > 0:
+    while yet_to_visit_pq:
         
         # Every time any node is referred from yet_to_visit list, counter of limit operation incremented
         outer_iterations += 1    
         
         # Get the current node
-        current_node_position = (-999, -999)
-        current_node = Node(None, tuple(current_node_position))
-        current_node.f = 999999
-        for i_position in yet_to_visit_dict.keys():
-            i_node = yet_to_visit_dict[i_position] ## first is g, second is f
-            if i_node.f < current_node.f: ## compare the f
-                current_node = i_node
+        _, current_node = heapq.heappop(yet_to_visit_pq)
                 
-        # if we hit this point return the path such as it may be no solution or 
+        # CHANGED: if we hit this point return the path such as it may be no solution or 
         # computation cost is too high
-        # CHANGED
         if outer_iterations > max_iterations:
             print ("giving up on pathfinding too many outer_iterations")
             # Reconstruct path
@@ -251,11 +247,9 @@ def search_PRM(points, prm, start, end):
             return path_points
 
         # Pop current node out off yet_to_visit list, add to visited list
-        yet_to_visit_dict.pop(current_node.position)
         visited_dict[current_node.position] = True
 
-        # Check if we reached the goal
-        # CHANGED
+        # CHANGED: Check if we reached the goal
         if current_node.position == end_node.position:
             print ("PRM Goal reached")
             # Reconstruct path
@@ -266,8 +260,7 @@ def search_PRM(points, prm, start, end):
             path_points.reverse()
             return path_points
 
-        # Generate children from neighbors in the prm graph
-        # CHANGED
+        # CHANGED: Generate children from neighbors in the prm graph
         neighbors = prm[current_node.position]
 
         # CHANGED
@@ -279,7 +272,7 @@ def search_PRM(points, prm, start, end):
             # Create a new node for the neighbor
             child = Node(current_node, neighbor_idx)
             
-            # Create the f, g, and h values
+            # CHANGED: Create the f, g, and h values
             current_coord = points[current_node.position]
             child_coord = points[child.position]
             end_coord = points[end_node.position]
@@ -291,13 +284,8 @@ def search_PRM(points, prm, start, end):
 
             child.f = child.g + child.h
 
-            # Child is already in the yet_to_visit list and g cost is already lower
-            child_node_in_yet_to_visit = yet_to_visit_dict.get(child.position, False)
-            if (child_node_in_yet_to_visit is not False) and (child.g >= child_node_in_yet_to_visit.g):
-                continue
-
-            # Add the child to the yet_to_visit list
-            yet_to_visit_dict[child.position] = child
+            # CHAGNED: don't need to check if it is already in the pq since it is ordered
+            heapq.heappush(yet_to_visit_pq, (child.f, child))
 
     # If we reach here, no path was found
     print("No path found using PRM")

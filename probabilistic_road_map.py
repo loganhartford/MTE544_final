@@ -34,7 +34,7 @@ N_SAMPLE = 800  # number of sample_points
 N_KNN = 10  # number of edge from one sampled point (one node)
 MAX_EDGE_LEN = 3  # Maximum edge length, in [m]
 
-show_plot = True
+show_plot = False
 
 # When set to false, you can run this script stand-alone, it will use the information specified in main
 # When set to true, you are expected to use this with the stack and the specified map
@@ -184,7 +184,7 @@ def generate_sample_points(start, goal, rr, obstacles_list, obstacle_kd_tree, rn
         
         # Ensure the sample point is not within robot radius of an obstacle
         dist, _ = obstacle_kd_tree.query([x_rand, y_rand])
-        if dist >= rr:  
+        if dist >= rr*2:  
             sample_x.append(x_rand)
             sample_y.append(y_rand)
     
@@ -231,7 +231,7 @@ def is_collision(sx, sy, gx, gy, rr, obstacle_kd_tree, max_edge_len):
 
         # Ensure the sample point is not within robot radius of an obstacle
         dist, _ = obstacle_kd_tree.query([x, y])
-        if dist < rr:
+        if dist < rr*2:
             return True
 
     return False  # No collision

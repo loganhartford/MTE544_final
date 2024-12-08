@@ -40,6 +40,8 @@ show_plot = False
 # When set to true, you are expected to use this with the stack and the specified map
 use_map = True
 
+save_files = False
+
 def prm_graph(start, goal, obstacles_list, robot_radius, *, rng=None, m_utilities=None):
     """
     Run probabilistic road map graph generation
@@ -119,7 +121,7 @@ def prm_graph(start, goal, obstacles_list, robot_radius, *, rng=None, m_utilitie
 
      # Save the sample points, obstacles, and (if possible) the roadmap nodes to CSV
     # The roadmap is an adjacency list of indices, we can save sample points and obstacles
-    if use_map:
+    if use_map and save_files:
         np.savetxt("prm_samples.csv", np.column_stack((sample_x, sample_y)), delimiter=",", header="sample_x,sample_y", comments='')
         np.savetxt("prm_obstacles.csv", np.column_stack((obs_x, obs_y)), delimiter=",", header="obs_x,obs_y", comments='')
         # Save the roadmap adjacency list

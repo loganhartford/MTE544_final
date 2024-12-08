@@ -6,19 +6,6 @@ def plot_combined(prm_samples_file="prm_samples.csv",
                   planned_path_file="planned_path.csv",
                   prm_roadmap_file="prm_roadmap.csv",
                   robot_pose_file="robotPose.csv"):
-    """
-    Plots two subplots side-by-side:
-    - Left subplot: PRM graph (samples, obstacles, edges) and the planned path
-    - Right subplot: Planned path, robot's executed path, and obstacles
-
-    Assumptions:
-    - prm_samples.csv: has columns sample_x,sample_y
-    - prm_obstacles.csv: has columns obs_x,obs_y
-    - planned_path.csv: has columns x,y
-    - prm_roadmap.csv: adjacency list of the PRM graph (node_index, neighbors...)
-    - robotPose.csv: includes kf_x and kf_y columns for the robot's executed path
-    """
-
     prm_samples = np.loadtxt(prm_samples_file, delimiter=",", skiprows=1)
     sample_x, sample_y = prm_samples[:,0], prm_samples[:,1]
 
@@ -30,10 +17,9 @@ def plot_combined(prm_samples_file="prm_samples.csv",
 
     roadmap = []
     with open(prm_roadmap_file, 'r') as f:
-        f.readline()  # skip header line
+        f.readline()
         for line in f:
             parts = line.strip().split(",")
-            # first part is node_index, rest are neighbors
             if len(parts) > 1:
                 neighbors = [int(x) for x in parts[1:] if x.strip() != '']
             else:
@@ -55,39 +41,22 @@ def plot_combined(prm_samples_file="prm_samples.csv",
     robot_x = robot_data[:, 0]
     robot_y = robot_data[:, 1]
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
-
+    plt.figure()
     for i, neighbors in enumerate(roadmap):
         for ind in neighbors:
-            ax1.plot([sample_x[i], sample_x[ind]], [sample_y[i], sample_y[ind]], "-c")
-    ax1.plot(sample_x, sample_y, ".b", label="PRM Samples")
-    ax1.plot(obs_x, obs_y, ".k", label="Obstacles")
-    ax1.plot(path_x, path_y, "-r", label="Planned Path")
-    ax1.scatter(path_x[0], path_y[0], c='g', marker='^', label='Start')
-    ax1.scatter(path_x[-1], path_y[-1], c='m', marker='^', label='Goal')
-
-    ax1.set_xlabel('X (m)')
-    ax1.set_ylabel('Y (m)')
-    ax1.set_title('PRM Graph and Planned Path')
-    ax1.grid(True)
-    ax1.axis('equal')
-    ax1.legend()
-
-    # Right Subplot: Planned Path vs Robot Path with Obstacles
-    ax2.plot(obs_x, obs_y, '.k', label='Obstacles')
-    ax2.plot(path_x, path_y, '-r', label='Planned Path')
-    ax2.scatter(path_x[0], path_y[0], c='g', marker='^', label='Start')
-    ax2.scatter(path_x[-1], path_y[-1], c='m', marker='^', label='Goal')
-    ax2.plot(robot_x, robot_y, '-b', label='Robot Path')
-
-    ax2.set_xlabel('X (m)')
-    ax2.set_ylabel('Y (m)')
-    ax2.set_title('Planned Path vs Executed Robot Path with Map')
-    ax2.grid(True)
-    ax2.axis('equal')
-    ax2.legend()
-
-    plt.tight_layout()
+            plt.plot([sample_x[i], sample_x[ind]], [sample_y[i], sample_y[ind]], "-c")
+    plt.plot(sample_x, sample_y, ".b", label="PRM Samples")
+    plt.plot(obs_x, obs_y, ".k", label="Obstacles")
+    plt.plot(path_x, path_y, "-r", label="Planned Path")
+    plt.scatter(path_x[0], path_y[0], c='g', marker='^', label='Start')
+    plt.scatter(path_x[-1], path_y[-1], c='m', marker='^', label='Goal')
+    plt.plot(robot_x, robot_y, '-b', label='Robot Path')
+    plt.xlabel('X (m)')
+    plt.ylabel('Y (m)')
+    plt.title('PRM Graph, Planned Path, and Executed Robot Path')
+    plt.grid(True)
+    plt.axis('equal')
+    plt.legend()
     plt.show()
 
 def plot_path_and_robot(robot_pose_file="robotPose.csv",
@@ -140,9 +109,9 @@ def plot_path_and_robot(robot_pose_file="robotPose.csv",
 
 if __name__ == '__main__':
     # Example usage:
-    # plot_combined(prm_samples_file="prm_samples.csv",
-    #               prm_obstacles_file="prm_obstacles.csv",
-    #               planned_path_file="planned_path.csv",
-    #               prm_roadmap_file="prm_roadmap.csv",
-    #               robot_pose_file="robotPose.csv")
-    plot_path_and_robot()
+    plot_combined(prm_samples_file="prm_samples.csv",
+                  prm_obstacles_file="prm_obstacles.csv",
+                  planned_path_file="planned_path.csv",
+                  prm_roadmap_file="prm_roadmap.csv",
+                  robot_pose_file="robotPose.csv")
+    # plot_path_and_robot()

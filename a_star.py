@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from math import sqrt
+import heapq
 
 
 class Node:
@@ -131,7 +132,7 @@ def search(maze, start, end, scale_factor):
         # if we hit this point return the path such as it may be no solution or 
         # computation cost is too high
         if outer_iterations > max_iterations:
-            print ("giving up on pathfinding too many iterations")
+            print ("giving up on pathfinding too many outer_iterations")
             return return_path(current_node,maze)
 
         # Pop current node out off yet_to_visit list, add to visited list
@@ -194,7 +195,7 @@ def search(maze, start, end, scale_factor):
             yet_to_visit_dict[child.position] = child
 
 
-# [Part 3] TODO Complete the this function so that it is adapted to search a graph provided as PRM instead of a grid maze
+# [Part 3] DONE Complete the this function so that it is adapted to search a graph provided as PRM instead of a grid maze
 # Hint: look at the original A* search above and adapt to the PRM
 def search_PRM(points, prm, start, end):
     """
@@ -216,6 +217,76 @@ def search_PRM(points, prm, start, end):
 
     path_points = []
 
-    ...
-    
-    return path_points
+    # Initialize open and closed sets
+    yet_to_visit_pq = []
+    heapq.heappush(yet_to_visit_pq, (start_node.f, start_node))
+
+    visited_dict = {}
+
+    max_iterations = (len(points) // 2) ** 10
+    outer_iterations = 0
+
+    while yet_to_visit_pq:
+        
+        # Every time any node is referred from yet_to_visit list, counter of limit operation incremented
+        outer_iterations += 1    
+        
+        # Get the current node
+        _, current_node = heapq.heappop(yet_to_visit_pq)
+                
+        # CHANGED: if we hit this point return the path such as it may be no solution or 
+        # computation cost is too high
+        if outer_iterations > max_iterations:
+            print ("giving up on pathfinding too many outer_iterations")
+            # Reconstruct path
+            current = current_node
+            while current is not None:
+                path_points.append(points[current.position])
+                current = current.parent
+            path_points.reverse()
+            return path_points
+
+        # Pop current node out off yet_to_visit list, add to visited list
+        visited_dict[current_node.position] = True
+
+        # CHANGED: Check if we reached the goal
+        if current_node.position == end_node.position:
+            print ("PRM Goal reached")
+            # Reconstruct path
+            current = current_node
+            while current is not None:
+                path_points.append(points[current.position])
+                current = current.parent
+            path_points.reverse()
+            return path_points
+
+        # CHANGED: Generate children from neighbors in the prm graph
+        neighbors = prm[current_node.position]
+
+        # CHANGED
+        for neighbor_idx in neighbors:
+            # If neighbor is already explored, skip
+            if neighbor_idx in visited_dict:
+                continue
+
+            # Create a new node for the neighbor
+            child = Node(current_node, neighbor_idx)
+            
+            # CHANGED: Create the f, g, and h values
+            current_coord = points[current_node.position]
+            child_coord = points[child.position]
+            end_coord = points[end_node.position]
+            child.g = current_node.g + sqrt(((child_coord[0] - current_coord[0]) ** 2) + 
+                                           ((child_coord[1] - current_coord[1]) ** 2))
+            ## Heuristic costs calculated here, this is using eucledian distance
+            child.h = sqrt(((child_coord[0] - end_coord[0]) ** 2) + 
+                       ((child_coord[1] - end_coord[1]) ** 2)) 
+
+            child.f = child.g + child.h
+
+            # CHAGNED: don't need to check if it is already in the pq since it is ordered
+            heapq.heappush(yet_to_visit_pq, (child.f, child))
+
+    # If we reach here, no path was found
+    print("No path found using PRM")
+    return []

@@ -34,7 +34,7 @@ N_SAMPLE = 800  # number of sample_points
 N_KNN = 10  # number of edge from one sampled point (one node)
 MAX_EDGE_LEN = 3  # Maximum edge length, in [m]
 
-show_plot = True
+show_plot = False
 
 # When set to false, you can run this script stand-alone, it will use the information specified in main
 # When set to true, you are expected to use this with the stack and the specified map
@@ -61,11 +61,12 @@ def prm_graph(start, goal, obstacles_list, robot_radius, *, rng=None, m_utilitie
     max_edge_len = MAX_EDGE_LEN
     # Generate the sample points
     if use_map:
-        # [Part 2] TODO The radius of the robot and the maximum edge lengths are given in [m], but the map is given in cell positions.
+        # [Part 2] DONE The radius of the robot and the maximum edge lengths are given in [m], but the map is given in cell positions.
         # Therefore, when using the map, the radius and edge length need to be adjusted for the resolution of the cell positions
         # Hint: in the map utilities there is the resolution stored
-        robot_radius = ...
-        max_edge_len = ...
+        resolution = m_utilities.getResolution()  # Get the resolution of the map (meters per cell)
+        robot_radius = robot_radius / resolution  # Convert robot radius to cell units
+        max_edge_len = max_edge_len / resolution  # Convert max edge length to cell units
 
     # Get sample data
     sample_points = generate_sample_points(start, goal,
@@ -84,7 +85,7 @@ def prm_graph(start, goal, obstacles_list, robot_radius, *, rng=None, m_utilitie
             # When using the map, first convert cells into positions, then plot (for a more intuitive visualization)
             # Plot the sample points
             samples_pos = np.array([m_utilities.cell_2_position([i, j]) for i, j in zip(sample_points[0], sample_points[1])])
-            print(samples_pos)
+            # print(samples_pos)
             sample_x = samples_pos[:, 0]
             sample_y = samples_pos[:, 1]
             plt.plot(sample_x, sample_y, ".b")   
@@ -115,7 +116,25 @@ def prm_graph(start, goal, obstacles_list, robot_radius, *, rng=None, m_utilitie
         plt.grid(True)
         plt.axis("equal")
         plt.show()
-    
+
+     # Save the sample points, obstacles, and (if possible) the roadmap nodes to CSV
+    # The roadmap is an adjacency list of indices, we can save sample points and obstacles
+    if use_map:
+        np.savetxt("prm_samples.csv", np.column_stack((sample_x, sample_y)), delimiter=",", header="sample_x,sample_y", comments='')
+        np.savetxt("prm_obstacles.csv", np.column_stack((obs_x, obs_y)), delimiter=",", header="obs_x,obs_y", comments='')
+        # Save the roadmap adjacency list
+        # We'll save it as:
+        # node_index, neighbor_1, neighbor_2, ...
+        with open("prm_roadmap.csv", "w") as f:
+            # Write a header
+            # Assuming at most N_KNN neighbors, but it's okay if some lines have fewer
+            f.write("node_index,neighbors...\n")
+            for i, neighbors in enumerate(roadmap):
+                line = str(i)
+                for n in neighbors:
+                    line += f",{n}"
+                f.write(line+"\n")
+
     # Return generated roadmap, if using a costmap, return also the list of indices of the sample points
     if use_map:
         sample_points_tuple = list(zip(*sample_points))
@@ -149,7 +168,7 @@ def generate_sample_points(start, goal, rr, obstacles_list, obstacle_kd_tree, rn
     if rng is None:
         rng = np.random.default_rng()
 
-    # [Part 2] TODO Create list of sample points within the min and max obstacle coordinates
+    # [Part 2] DONE Create list of sample points within the min and max obstacle coordinates
     # Use rng to create random samples. 
     # NOTE: by using rng, the created random samples may not be integers. 
     # When using the map, the samples should be indices of the cells of the costmap, therefore remember to round them to integer values.
@@ -157,11 +176,21 @@ def generate_sample_points(start, goal, rr, obstacles_list, obstacle_kd_tree, rn
 
     sample_x, sample_y = [], []
 
-    while len(sample_x) <= N_SAMPLE:
-        ...
+    # Generate N samples
+    while len(sample_x) < N_SAMPLE:
+        # Random sample
+        x_rand = rng.uniform(min(ox), max(ox))
+        y_rand = rng.uniform(min(oy), max(oy))
+        
+        # Ensure the sample point is not within robot radius of an obstacle
+        dist, _ = obstacle_kd_tree.query([x_rand, y_rand])
+        if dist >= rr*2:  
+            sample_x.append(x_rand)
+            sample_y.append(y_rand)
     
-    # [Part 2] TODO Add also the start and goal to the samples so that they are connected to the roadmap
-    ...
+    # [Part 2] DONE Add also the start and goal to the samples so that they are connected to the roadmap
+    sample_x.extend([start[0], goal[0]])
+    sample_y.extend([start[1], goal[1]])
 
     return [sample_x, sample_y]
 
@@ -184,10 +213,26 @@ def is_collision(sx, sy, gx, gy, rr, obstacle_kd_tree, max_edge_len):
     If max_edge_len is exceeded, also return true as if a collision is verified.
     """
 
-    # [Part 2] TODO Check where there would be a collision with an obstacle between two nodes at sx,sy and gx,gy, and wether the edge between the two nodes is greater than max_edge_len
+    # [Part 2] DONE Check where there would be a collision with an obstacle between two nodes at sx,sy and gx,gy, and wether the edge between the two nodes is greater than max_edge_len
     # Hint: you may leverage on the query function of KDTree
     
-    ...
+    # Check if the distance between the two points is greater than the max edge length
+    dx = gx - sx
+    dy = gy - sy
+    distance = math.hypot(dx, dy)
+    if distance > max_edge_len:
+        return True
+
+    # Check if there is a collision between the two points
+    steps = int(distance / rr) + 1 # Number of points to sample along the edge
+    for i in range(steps + 1):
+        x = sx + dx * i / steps
+        y = sy + dy * i / steps
+
+        # Ensure the sample point is not within robot radius of an obstacle
+        dist, _ = obstacle_kd_tree.query([x, y])
+        if dist < rr*2:
+            return True
 
     return False  # No collision
 
@@ -219,10 +264,26 @@ def generate_road_map(sample_points, rr, obstacle_kd_tree, max_edge_len, m_utili
     road_map = []
     n_sample = len(sample_x)
 
-    #[Part 2] TODO Generate roadmap for all sample points, i.e. create the edges between nodes (sample points)
+    #[Part 2] DONE Generate roadmap for all sample points, i.e. create the edges between nodes (sample points)
     # Note: use the is_collision function to check for possible collisions (do not make an edge if there is collision)
     # Hint: you may ceate a KDTree object to help with the generation of the roadmap, but other methods also work
-    ...
+    kdtree = KDTree(np.column_stack((sample_x, sample_y)))
+
+    for i in range(n_sample):
+        # Get the N_KNN nearest neighbors
+        dists, neighbors = kdtree.query([sample_x[i], sample_y[i]], k=N_KNN)
+        edges = []
+
+        # Start at 1 to skip the first element, which is the sample point itself
+        for j in range(1, len(neighbors)):  
+            nx, ny = sample_x[neighbors[j]], sample_y[neighbors[j]]\
+            # Check if there is a collision between the two nodes
+            if not is_collision(sample_x[i], sample_y[i], nx, ny, rr, obstacle_kd_tree, max_edge_len):
+                # Add the neighbor to the list of edges for the sample point
+                edges.append(neighbors[j])
+
+        # Add the list of edges to the roadmap
+        road_map.append(edges)
 
     return road_map
 

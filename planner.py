@@ -44,10 +44,24 @@ class planner:
         startPose=self.m_utilities.position_2_cell(startPoseCart)
         endPose=self.m_utilities.position_2_cell(endPoseCart)
 
-        # [Part 3] TODO Use the PRM and search_PRM to generate the path
+        # [Part 3] DONE Use the PRM and search_PRM to generate the path
         # Hint: see the example of the ASTAR case below, there is no scaling factor for PRM
         if type == PRM_PLANNER:
-            ...
+
+            # Found online
+            robot_radius = 0.105  
+            
+            # Generate the PRM graph
+            start_time = time.time()
+            sample_points, roadmap = prm_graph(startPose, endPose, self.obstaclesListCell, robot_radius, m_utilities=self.m_utilities)
+            
+            # Search on PRM using A*
+            path = search_PRM(sample_points, roadmap, startPose, endPose)
+            end_time = time.time()
+
+            print(f"the time took for a_star calculation was {end_time - start_time}")
+
+            path_ = path
 
         elif type == ASTAR_PLANNER: # This is the same planner you should have implemented for Lab4
             scale_factor = 4 # Depending on resolution, this can be smaller or larger
@@ -74,6 +88,8 @@ class planner:
                  endPoseCart[1], '*')
 
         plt.show()
+
+        np.savetxt("planned_path.csv", Path, delimiter=",", header="x,y", comments='')
         
         return Path.tolist()
     

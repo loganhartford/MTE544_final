@@ -278,7 +278,6 @@ def search_PRM(points, prm, start, end):
 
             # Create a new node for the neighbor
             child = Node(current_node, neighbor_idx)
-            print("neighbor_idx", neighbor_idx)
             
             # Create the f, g, and h values
             current_coord = points[current_node.position]

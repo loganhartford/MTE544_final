@@ -88,6 +88,8 @@ class planner:
                  endPoseCart[1], '*')
 
         plt.show()
+
+        np.savetxt("planned_path.csv", Path, delimiter=",", header="x,y", comments='')
         
         return Path.tolist()
     

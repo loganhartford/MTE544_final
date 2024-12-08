@@ -85,7 +85,7 @@ def prm_graph(start, goal, obstacles_list, robot_radius, *, rng=None, m_utilitie
             # When using the map, first convert cells into positions, then plot (for a more intuitive visualization)
             # Plot the sample points
             samples_pos = np.array([m_utilities.cell_2_position([i, j]) for i, j in zip(sample_points[0], sample_points[1])])
-            print(samples_pos)
+            # print(samples_pos)
             sample_x = samples_pos[:, 0]
             sample_y = samples_pos[:, 1]
             plt.plot(sample_x, sample_y, ".b")   
@@ -116,7 +116,25 @@ def prm_graph(start, goal, obstacles_list, robot_radius, *, rng=None, m_utilitie
         plt.grid(True)
         plt.axis("equal")
         plt.show()
-    
+
+     # Save the sample points, obstacles, and (if possible) the roadmap nodes to CSV
+    # The roadmap is an adjacency list of indices, we can save sample points and obstacles
+    if use_map:
+        np.savetxt("prm_samples.csv", np.column_stack((sample_x, sample_y)), delimiter=",", header="sample_x,sample_y", comments='')
+        np.savetxt("prm_obstacles.csv", np.column_stack((obs_x, obs_y)), delimiter=",", header="obs_x,obs_y", comments='')
+        # Save the roadmap adjacency list
+        # We'll save it as:
+        # node_index, neighbor_1, neighbor_2, ...
+        with open("prm_roadmap.csv", "w") as f:
+            # Write a header
+            # Assuming at most N_KNN neighbors, but it's okay if some lines have fewer
+            f.write("node_index,neighbors...\n")
+            for i, neighbors in enumerate(roadmap):
+                line = str(i)
+                for n in neighbors:
+                    line += f",{n}"
+                f.write(line+"\n")
+
     # Return generated roadmap, if using a costmap, return also the list of indices of the sample points
     if use_map:
         sample_points_tuple = list(zip(*sample_points))

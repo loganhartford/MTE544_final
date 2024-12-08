@@ -14,6 +14,6 @@ def compute_path_length(planned_path_file="planned_path.csv"):
     return total_length
 
 if __name__ == "__main__":
-    length = compute_path_length("goal2/planned_path.csv")
+    length = compute_path_length("planned_path.csv")
     print("Path length:", length)
 

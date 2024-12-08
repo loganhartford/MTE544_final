@@ -44,13 +44,14 @@ def plot_combined(prm_samples_file="prm_samples.csv",
     plt.figure()
     for i, neighbors in enumerate(roadmap):
         for ind in neighbors:
-            plt.plot([sample_x[i], sample_x[ind]], [sample_y[i], sample_y[ind]], "-c")
-    plt.plot(sample_x, sample_y, ".b", label="PRM Samples")
+            plt.plot([sample_x[i], sample_x[ind]], [sample_y[i], sample_y[ind]], "-c", linewidth=0.5)
+    plt.plot(sample_x, sample_y, ".b", label="PRM Samples", markersize=3)
     plt.plot(obs_x, obs_y, ".k", label="Obstacles")
-    plt.plot(path_x, path_y, "-r", label="Planned Path")
+    plt.plot(path_x, path_y, "-r", label="Planned Path", linewidth=2)
     plt.scatter(path_x[0], path_y[0], c='g', marker='^', label='Start')
     plt.scatter(path_x[-1], path_y[-1], c='m', marker='^', label='Goal')
-    plt.plot(robot_x, robot_y, '-b', label='Robot Path')
+    plt.plot(robot_x, robot_y, '-b', label='Robot Path', linewidth=2)
+
     plt.xlabel('X (m)')
     plt.ylabel('Y (m)')
     plt.title('PRM Graph, Planned Path, and Executed Robot Path')

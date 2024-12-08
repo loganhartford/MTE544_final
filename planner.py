@@ -30,7 +30,10 @@ class planner:
         
         #### If using the map, you can leverage on the code below originally implemented for A*
         self.m_utilities=mapManipulator(laser_sig=0.4)    
+        start_time = time.time()
         self.costMap=self.m_utilities.make_likelihood_field()
+        end_time = time.time()
+        print(f"the time took for costmap was {end_time - start_time}")
 
         # List of obstacles to plot (in x and y coordiantes)
         self.obstaclesList = np.array(self.m_utilities.getAllObstacles())     
@@ -54,12 +57,13 @@ class planner:
             # Generate the PRM graph
             start_time = time.time()
             sample_points, roadmap = prm_graph(startPose, endPose, self.obstaclesListCell, robot_radius, m_utilities=self.m_utilities)
-            
+            prm_time = time.time()
             # Search on PRM using A*
             path = search_PRM(sample_points, roadmap, startPose, endPose)
             end_time = time.time()
 
-            print(f"the time took for a_star calculation was {end_time - start_time}")
+            print(f"the time took for prm calculation was {prm_time - start_time}")
+            print(f"the time took for a_star calculation was {end_time - prm_time}")
 
             path_ = path
 

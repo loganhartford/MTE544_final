@@ -178,8 +178,7 @@ def search(maze, start, end, scale_factor):
                 continue
 
             # Create the f, g, and h values
-            child.g = current_node.g + sqrt(((child.position[0] - current_node.position[0]) ** 2) + 
-                                           ((child.position[1] - current_node.position[1]) ** 2))
+            child.g = current_node.g + 1
             ## Heuristic costs calculated here, this is using eucledian distance
             child.h = sqrt(((child.position[0] - end_node.position[0]) ** 2) + 
                        ((child.position[1] - end_node.position[1]) ** 2)) 

@@ -119,13 +119,11 @@ def prm_graph(start, goal, obstacles_list, robot_radius, *, rng=None, m_utilitie
         plt.axis("equal")
         plt.show()
 
-     # Save the sample points, obstacles, and (if possible) the roadmap nodes to CSV
-    # The roadmap is an adjacency list of indices, we can save sample points and obstacles
+    # Save data for better plot generation later
     if use_map and save_files:
         np.savetxt("prm_samples.csv", np.column_stack((sample_x, sample_y)), delimiter=",", header="sample_x,sample_y", comments='')
         np.savetxt("prm_obstacles.csv", np.column_stack((obs_x, obs_y)), delimiter=",", header="obs_x,obs_y", comments='')
         # Save the roadmap adjacency list
-        # We'll save it as:
         # node_index, neighbor_1, neighbor_2, ...
         with open("prm_roadmap.csv", "w") as f:
             # Write a header

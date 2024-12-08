@@ -66,9 +66,9 @@ def prm_graph(start, goal, obstacles_list, robot_radius, *, rng=None, m_utilitie
         # [Part 2] DONE The radius of the robot and the maximum edge lengths are given in [m], but the map is given in cell positions.
         # Therefore, when using the map, the radius and edge length need to be adjusted for the resolution of the cell positions
         # Hint: in the map utilities there is the resolution stored
-        resolution = m_utilities.getResolution()  # Get the resolution of the map (meters per cell)
-        robot_radius = robot_radius / resolution  # Convert robot radius to cell units
-        max_edge_len = max_edge_len / resolution  # Convert max edge length to cell units
+        resolution = m_utilities.getResolution()
+        robot_radius = robot_radius / resolution
+        max_edge_len = max_edge_len / resolution
 
     # Get sample data
     sample_points = generate_sample_points(start, goal,
@@ -182,7 +182,7 @@ def generate_sample_points(start, goal, rr, obstacles_list, obstacle_kd_tree, rn
         x_rand = rng.uniform(min(ox), max(ox))
         y_rand = rng.uniform(min(oy), max(oy))
         
-        # Ensure the sample point is not within robot radius of an obstacle
+        # Ensure the sample point is not within 2x robot radius of an obstacle
         dist, _ = obstacle_kd_tree.query([x_rand, y_rand])
         if dist >= rr*2:  
             sample_x.append(x_rand)
@@ -229,7 +229,7 @@ def is_collision(sx, sy, gx, gy, rr, obstacle_kd_tree, max_edge_len):
         x = sx + dx * i / steps
         y = sy + dy * i / steps
 
-        # Ensure the sample point is not within robot radius of an obstacle
+        # Ensure the sample point is not within 2x robot radius of an obstacle
         dist, _ = obstacle_kd_tree.query([x, y])
         if dist < rr*2:
             return True

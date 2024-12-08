@@ -53,6 +53,7 @@ class decision_maker(Node):
             return -1
 
         # [Part 4] DONE PID gains if needed
+        # Adjusted slightly to try and prevent overshoot
         self.controller=trajectoryController(klp=0.1, klv=0.2, kap=0.3, kav=0.2)      
         
         if motion_type in [TRAJECTORY_PLANNER, ASTAR_PLANNER, PRM_PLANNER]:
